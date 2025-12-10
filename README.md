@@ -116,11 +116,36 @@ For production use, consider:
 - Adding rate limiting for vote entries
 - Implementing audit logging
 
+## Deployment
+
+### Deploy to Vercel
+
+1. **Push your code to GitHub** (already done)
+
+2. **Set up environment variables in Vercel**:
+   - Go to your Vercel project → Settings → Environment Variables
+   - Add all Firebase environment variables:
+     - `NEXT_PUBLIC_FIREBASE_API_KEY`
+     - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+     - `NEXT_PUBLIC_FIREBASE_DATABASE_URL`
+     - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+     - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+     - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+     - `NEXT_PUBLIC_FIREBASE_APP_ID`
+
+3. **Deploy**:
+   - Connect your GitHub repository to Vercel
+   - Vercel will automatically detect Next.js and deploy
+   - Your site will be live at `https://your-project.vercel.app`
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
 ## Troubleshooting
 
 - **Connection issues**: Check Firebase configuration and internet connection
 - **Photos not loading**: Ensure images are in `public/images/` with correct names
 - **Votes not updating**: Check Firebase database rules and connection status
+- **Build fails**: Verify all environment variables are set in Vercel
 
 
 

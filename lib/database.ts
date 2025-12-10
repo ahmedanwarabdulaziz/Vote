@@ -1,4 +1,4 @@
-import { ref, set, onValue, get, update, increment, decrement } from 'firebase/database';
+import { ref, set, onValue, get, update } from 'firebase/database';
 import { database } from './firebase';
 import { ElectionGroup, Candidate } from './types';
 import { ELECTION_CONFIG } from './electionData';
