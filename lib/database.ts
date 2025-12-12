@@ -197,3 +197,40 @@ export async function updateCandidatePhotos() {
   
   await Promise.all(updatePromises);
 }
+
+export async function resetAllVotes() {
+  const groupsRef = ref(database, 'election/groups');
+  const snapshot = await get(groupsRef);
+  
+  if (!snapshot.exists()) {
+    throw new Error('Election data not found');
+  }
+  
+  const data = snapshot.val();
+  const updates: Record<string, any> = {};
+  
+  // Reset all candidate votes to 0
+  Object.keys(data).forEach((groupId) => {
+    const groupData = data[groupId];
+    if (groupData.candidates) {
+      Object.keys(groupData.candidates).forEach((candidateId) => {
+        const votesPath = `election/groups/${groupId}/candidates/${candidateId}/votes`;
+        updates[votesPath] = 0;
+      });
+    }
+  });
+  
+  // Reset wrong vote count
+  updates['election/wrongVoteCount'] = 0;
+  
+  // Clear vote log
+  updates['election/voteLog'] = {};
+  
+  // Apply all updates
+  const updatePromises = Object.keys(updates).map(path => {
+    const pathRef = ref(database, path);
+    return set(pathRef, updates[path]);
+  });
+  
+  await Promise.all(updatePromises);
+}
