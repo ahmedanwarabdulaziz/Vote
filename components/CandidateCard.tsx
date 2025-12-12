@@ -8,6 +8,7 @@ interface CandidateCardProps {
   groupId: string;
   onAddVote: (groupId: string, candidateId: string) => void;
   onSubtractVote: (groupId: string, candidateId: string) => void;
+  hidePhoto?: boolean;
 }
 
 export default function CandidateCard({
@@ -15,6 +16,7 @@ export default function CandidateCard({
   groupId,
   onAddVote,
   onSubtractVote,
+  hidePhoto = false,
 }: CandidateCardProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -136,8 +138,10 @@ export default function CandidateCard({
 
   return (
     <div 
-      className="relative rounded-lg shadow-md border border-gray-300 overflow-hidden h-full min-h-0 hover:shadow-lg transition-shadow flex flex-col"
-      style={{
+      className="relative rounded-lg shadow-md border border-gray-300 overflow-hidden h-full w-full min-h-0 hover:shadow-lg transition-shadow flex flex-col"
+      style={hidePhoto ? {
+        background: 'linear-gradient(to bottom right, #dbeafe, #e0e7ff)'
+      } : {
         backgroundImage: candidate.photo ? `url(${candidate.photo})` : 'linear-gradient(to bottom right, #dbeafe, #e0e7ff)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -145,25 +149,35 @@ export default function CandidateCard({
       }}
     >
       {/* Gradient Overlay - 0% at top, 100% at bottom */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white z-0"></div>
+      {!hidePhoto && <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white z-0"></div>}
       
       {/* Content Overlay */}
-      <div className="relative z-10 flex flex-col h-full p-2">
-        {/* Name - Big and Prominent */}
-        <h3 className="text-sm font-bold text-center mb-2 text-gray-900 leading-tight flex items-center justify-center px-1 break-words min-h-[3rem] line-clamp-2">
+      <div className="relative z-10 flex flex-col h-full w-full p-1.5 min-h-0">
+        {/* Reference Number */}
+        {candidate.number !== undefined && candidate.number !== null && (
+          <div className="mb-1 flex items-center justify-center flex-shrink-0">
+            <div className="bg-gray-700 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-md whitespace-nowrap">
+              <span className="text-gray-300">رقم:</span>
+              <span className="font-bold">{candidate.number}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Name */}
+        <h3 className="text-xs font-bold text-center mb-1 text-gray-900 leading-tight flex items-center justify-center px-0.5 break-words line-clamp-2 flex-shrink-0" style={{ minHeight: '2rem' }}>
           {candidate.name}
         </h3>
         
-        {/* Vote Counter - Above Buttons */}
-        <div className="mb-2 flex items-center justify-center">
-          <div className="bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-md">
-            <div className="text-xl font-bold leading-none">
+        {/* Vote Counter - Always visible */}
+        <div className="mb-1 flex items-center justify-center flex-shrink-0">
+          <div className="bg-blue-600 text-white px-2 py-1 rounded-lg shadow-md whitespace-nowrap">
+            <div className="text-sm font-bold leading-none">
               {candidate.votes}
             </div>
           </div>
         </div>
         
-        {/* Buttons Row */}
+        {/* Buttons Row - Always visible at bottom */}
         <div className="flex items-stretch gap-1.5 w-full mt-auto flex-shrink-0">
           {/* Big +1 Button */}
           <button
@@ -173,7 +187,8 @@ export default function CandidateCard({
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             disabled={isProcessing}
-            className="flex-[2] bg-gradient-to-b from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800 text-white font-bold py-3 px-2 rounded-lg text-lg shadow-md hover:shadow-lg transition-all no-select disabled:opacity-50 min-h-[3.5rem] flex items-center justify-center"
+            className="flex-[2] bg-gradient-to-b from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800 text-white font-bold py-2 px-1 rounded-lg text-sm shadow-md hover:shadow-lg transition-all no-select disabled:opacity-50 flex items-center justify-center touch-manipulation"
+            style={{ minHeight: '2.5rem' }}
           >
             +1
           </button>
@@ -186,7 +201,8 @@ export default function CandidateCard({
               handleSubtractVote(e);
             }}
             disabled={isProcessing || candidate.votes === 0}
-            className="flex-1 bg-gradient-to-b from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-1.5 px-1 rounded-lg text-xs shadow hover:shadow-md transition-all no-select disabled:opacity-50 min-h-[2rem] flex items-center justify-center"
+            className="flex-1 bg-gradient-to-b from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-1.5 px-1 rounded-lg text-xs shadow hover:shadow-md transition-all no-select disabled:opacity-50 flex items-center justify-center touch-manipulation"
+            style={{ minHeight: '2rem' }}
           >
             -1
           </button>
