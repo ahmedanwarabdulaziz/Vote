@@ -68,7 +68,7 @@ export const ELECTION_CONFIG: ElectionGroup[] = [
 
 // Passwords - update these during setup
 export const VOTE_ENTRY_PASSWORD = 'vote123'; // Change this
-export const RESULTS_VIEW_PASSWORD = 'results123'; // Change this
+export const RESULTS_VIEW_PASSWORD = '5550555'; // Password for results page
 export const TOP_VOTE_PASSWORD = 'top5550'; // Password for top positions voting page
 export const OTHER_VOTE_PASSWORD = 'other5550'; // Password for members and under-age voting page
 

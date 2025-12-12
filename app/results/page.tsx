@@ -5,21 +5,32 @@ import { useRouter } from 'next/navigation';
 import { ElectionGroup, Candidate } from '@/lib/types';
 import { subscribeToElection, subscribeToWrongVotes } from '@/lib/database';
 import { monitorConnectionStatus } from '@/lib/firebase';
-import { ELECTION_CONFIG } from '@/lib/electionData';
+import { ELECTION_CONFIG, RESULTS_VIEW_PASSWORD } from '@/lib/electionData';
 
 export default function ResultsPage() {
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [groups, setGroups] = useState<ElectionGroup[]>([]);
   const [isOnline, setIsOnline] = useState(true);
   const [isDatabaseConnected, setIsDatabaseConnected] = useState(false);
   const [wrongVoteCount, setWrongVoteCount] = useState(0);
 
+  // Monitor connection status immediately (even before authentication)
   useEffect(() => {
-    // Monitor connection status
     const unsubscribeConnection = monitorConnectionStatus((online, dbConnected) => {
       setIsOnline(online);
       setIsDatabaseConnected(dbConnected);
     });
+
+    return () => {
+      unsubscribeConnection();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
 
     // Subscribe to wrong vote count
     const unsubscribeWrongVotes = subscribeToWrongVotes((count) => {
@@ -32,11 +43,19 @@ export default function ResultsPage() {
     });
 
     return () => {
-      unsubscribeConnection();
       unsubscribeWrongVotes();
       unsubscribeElection();
     };
-  }, []);
+  }, [isAuthenticated]);
+
+  const handleLogin = () => {
+    if (password === RESULTS_VIEW_PASSWORD) {
+      setIsAuthenticated(true);
+      setError('');
+    } else {
+      setError('كلمة المرور غير صحيحة');
+    }
+  };
 
   // Get all winners across all groups
   const allWinners = useMemo(() => {
@@ -92,6 +111,64 @@ export default function ResultsPage() {
     
     return equalVotesMap;
   }, [groups]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen w-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-slate-800/50 backdrop-blur-lg rounded-xl shadow-2xl p-6 max-w-md w-full border border-slate-700">
+          <h1 className="text-2xl font-bold text-white mb-4 text-center">عرض النتائج</h1>
+          <p className="text-slate-300 mb-6 text-center">يرجى إدخال كلمة المرور للوصول إلى النتائج</p>
+          
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/20 text-red-200 text-center border border-red-500/50">
+              {error}
+            </div>
+          )}
+          
+          <div className="mb-4">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError('');
+              }}
+              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+              placeholder="كلمة المرور"
+              className="w-full px-4 py-3 rounded-lg bg-slate-700/50 text-white placeholder-slate-400 border border-slate-600 focus:outline-none focus:border-slate-500"
+              autoFocus
+            />
+          </div>
+          
+          <button
+            onClick={handleLogin}
+            className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-3"
+          >
+            دخول
+          </button>
+          
+          <button
+            onClick={() => router.push('/')}
+            className="w-full py-2 text-slate-400 hover:text-slate-300 transition-colors"
+          >
+            العودة للصفحة الرئيسية
+          </button>
+
+          {/* Connection Status */}
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <div className={`w-2 h-2 rounded-full transition-colors ${
+              isOnline && isDatabaseConnected 
+                ? 'bg-green-500 animate-pulse' 
+                : 'bg-red-500'
+            }`}></div>
+            <span className="text-xs text-slate-400">
+              {isOnline && isDatabaseConnected ? 'متصل' : 'غير متصل'}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
